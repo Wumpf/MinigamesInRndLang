@@ -1,3 +1,0 @@
-[submodule "rust_sfml__snake/sfml"]
-	path = rust_sfml__snake/sfml
-	url = https://github.com/jeremyletang/rust-sfml.git
