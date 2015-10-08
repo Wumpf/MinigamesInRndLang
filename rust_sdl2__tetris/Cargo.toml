@@ -1,0 +1,12 @@
+[package]
+name = "tetris"
+version = "0.0.1"
+authors = [ "Andreas" ]
+
+[[bin]]
+name = "tetris"
+
+[dependencies]
+sdl2 = "0.9"
+rand = "0.3"
+time = "0.1"
