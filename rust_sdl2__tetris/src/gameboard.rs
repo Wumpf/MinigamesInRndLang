@@ -52,6 +52,9 @@ impl Gameboard {
 			renderer.draw_line(start, Point::new(bottom_right.x(), start.y()));
 		}
 		
+		
+		let mut outline_rects: Vec<sdl2::rect::Rect> = Vec::new();
+		
 		// Draw the piece.
 		if self.piece.is_some() == true {
 			let ref piece = self.piece.unwrap();
@@ -61,10 +64,12 @@ impl Gameboard {
 					match piece[y][x] {
 						Block::Occupied(color) => {
 							let pos = (x as i32 + self.piece_position.0, y as i32 + self.piece_position.1);
-							renderer.set_draw_color(color); // Changing the color with every draw is unnecessary since the piece is single colored, but 
-							renderer.fill_rect(sdl2::rect::Rect::new_unwrap(top_left.x() + pos.0 * block_size_i + padding as i32, 
+							renderer.set_draw_color(color); // Changing the color with every draw is unnecessary since the piece is single colored, but
+							let rect = sdl2::rect::Rect::new_unwrap(top_left.x() + pos.0 * block_size_i + padding as i32, 
 																			top_left.y() + pos.1 * block_size_i + padding as i32,
-																			block_size_u - padding*2, block_size_u - padding*2));
+																			block_size_u - padding*2, block_size_u - padding*2);
+							outline_rects.push(rect);
+							renderer.fill_rect(rect);
 						}
 						_ => {}
 					}
@@ -77,15 +82,21 @@ impl Gameboard {
 			for x in 0..NUM_BLOCKS_X {
 				match self.fields[y][x] {
 					Block::Occupied(color) => {
-						renderer.set_draw_color(color); // Changing the color with every draw is unnecessary since the piece is single colored, but 
-						renderer.fill_rect(sdl2::rect::Rect::new_unwrap(top_left.x() + x as i32 * block_size_i + padding as i32, 
+						renderer.set_draw_color(color); // Changing the color with every draw is unnecessary since the piece is single colored, but
+						let rect = sdl2::rect::Rect::new_unwrap(top_left.x() + x as i32 * block_size_i + padding as i32, 
 																		top_left.y() + y as i32 * block_size_i + padding as i32,
-																		block_size_u - padding*2, block_size_u - padding*2));
+																		block_size_u - padding*2, block_size_u - padding*2);
+						outline_rects.push(rect);
+						renderer.fill_rect(rect);
 					}
 					_ => {}
 				}
 			}
 		}
+		
+		// Draw block outlines.
+		renderer.set_draw_color(sdl2::pixels::Color::RGB(255, 255, 255));
+		renderer.draw_rects(&outline_rects[..]);
 	}
 	
 	// Inserts a new piece. Overwrites old piece.
@@ -109,7 +120,15 @@ impl Gameboard {
 	}
 	
 	/// Removes all finished horizontal lines.
-	pub fn erase_filled_lines(&mut self) {	
+	fn erase_filled_lines(&mut self) {
+		for y in 0..NUM_BLOCKS_Y {
+			if self.fields[y].iter().all(|x| *x != Block::Empty) {
+				for y2 in (1..(y+1)).rev() {
+					self.fields[y2] = self.fields[y2-1];
+				}
+				self.fields[0] = [Block::Empty; NUM_BLOCKS_X];
+			}
+		}
 	}
 	
 	/// Current piece falls down by a single step. If it cant move further, its blocks will be added to the field.
@@ -133,6 +152,7 @@ impl Gameboard {
 				}
 				
 				self.piece = Option::None;
+				self.erase_filled_lines();
 			}
 		}
 	}
@@ -165,9 +185,21 @@ impl Gameboard {
 		return true;
 	}
 	
-	pub fn rotate_piece(&self) {
+	pub fn rotate_piece(&mut self) {
 		if self.piece.is_some() {
-			// TODO
+			let old_piece = self.piece.unwrap();
+			let mut new_piece = [[Block::Empty; PIECE_SIZE]; PIECE_SIZE];
+			
+			for y in 0..PIECE_SIZE {
+				for x in 0..PIECE_SIZE {
+					new_piece[PIECE_SIZE-1-x][y] = old_piece[y][x];			
+				}
+			}
+			
+			self.piece = Some(new_piece);
+			if !self.is_piece_valid() {
+				self.piece = Some(old_piece);	
+			}
 		}
 	}
 	

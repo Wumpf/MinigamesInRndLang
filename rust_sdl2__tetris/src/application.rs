@@ -98,12 +98,14 @@ impl<'a> Application<'a> {
 		
 		let current_time = time::precise_time_s();
 		match event {
+			Event::KeyDown { keycode: Some(Keycode::Up), .. } |
 			Event::KeyDown { keycode: Some(Keycode::Left), .. } |
 			Event::KeyDown { keycode: Some(Keycode::Right), .. } => {
 				if current_time - self.last_move_time > MOVEMENT_STEP {
 					self.last_move_time = current_time;
 
 					match event {
+						Event::KeyDown { keycode: Some(Keycode::Up), .. } => self.gameboard.rotate_piece(),
 						 Event::KeyDown { keycode: Some(Keycode::Left), .. }=> self.gameboard.move_piece_left(),
 						 Event::KeyDown { keycode: Some(Keycode::Right), .. } => self.gameboard.move_piece_right(),
 						 _ => {}
