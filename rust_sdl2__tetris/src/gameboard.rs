@@ -27,7 +27,7 @@ impl Gameboard {
 		}
 	}
 	
-	// Draws the gameboard.
+	/// Draws the gameboard.
 	pub fn draw(&self, renderer: &mut sdl2::render::Renderer, window_width: u32, window_height: u32) {
 		// Compute field extents.
 		let block_size_u = cmp::min(window_width / NUM_BLOCKS_X as u32, window_height / NUM_BLOCKS_Y as u32);
@@ -99,18 +99,20 @@ impl Gameboard {
 		renderer.draw_rects(&outline_rects[..]);
 	}
 	
-	// Inserts a new piece. Overwrites old piece.
+	/// Inserts a new piece. Overwrites old piece.
 	pub fn insert_piece(&mut self, piece: Piece) {
 		self.piece = Some(piece);
 		self.piece_position = (NUM_BLOCKS_X as i32 / 2, -(PIECE_SIZE as i32 / 2));
 	}
-	// Moves the active piece to the left. Does nothing if there is no active piece.
+	
+	/// Moves the active piece to the left. Does nothing if there is no active piece.
 	pub fn move_piece_left(&mut self) {
 		self.piece_position.0 -= 1;
 		if self.is_piece_valid() == false {
 			self.piece_position.0 += 1;	
 		}
 	}
+	
 	/// Moves the active piece to the right. Does nothing if there is no active piece.
 	pub fn move_piece_right(&mut self) {
 		self.piece_position.0 += 1;
@@ -188,13 +190,7 @@ impl Gameboard {
 	pub fn rotate_piece(&mut self) {
 		if self.piece.is_some() {
 			let old_piece = self.piece.unwrap();
-			let mut new_piece = [[Block::Empty; PIECE_SIZE]; PIECE_SIZE];
-			
-			for y in 0..PIECE_SIZE {
-				for x in 0..PIECE_SIZE {
-					new_piece[PIECE_SIZE-1-x][y] = old_piece[y][x];			
-				}
-			}
+			let new_piece = rotate_piece(&old_piece);
 			
 			self.piece = Some(new_piece);
 			if !self.is_piece_valid() {
